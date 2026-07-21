@@ -1,0 +1,99 @@
+# depslib dependency file v1.0
+1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"database.h"
+	"hobby.h"
+
+1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.c
+	"database.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<direct.h>
+
+1784659646 d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.h
+	"sqlite3.h"
+	<stdio.h>
+
+1784439091 d:\anime\libros\lenguaje c\proyectos\mihobbyc\sqlite3.h
+	<stdarg.h>
+
+1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.c
+	"hobby.h"
+	<stdio.h>
+	<string.h>
+
+1784659646 d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.h
+	"database.h"
+
+1784442663 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\sqlite3.c
+	<vxWorks.h>
+	<pthread.h>
+	"mingw.h"
+	"_mingw.h"
+	<stdarg.h>
+	"sqlite_cfg.h"
+	<stdint.h>
+	<inttypes.h>
+	<intrin.h>
+	<cmnintrin.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	<stddef.h>
+	<ctype.h>
+	<TargetConditionals.h>
+	<time.h>
+	<sys/sysctl.h>
+	<malloc/malloc.h>
+	<libkern/OSAtomic.h>
+	<malloc.h>
+	<pthread.h>
+	"windows.h"
+	<sys/cygwin.h>
+	<sys/stat.h>
+	<unistd.h>
+	<errno.h>
+	<process.h>
+	<math.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<unistd.h>
+	<sys/time.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<sys/ioctl.h>
+	<unistd.h>
+	<sys/time.h>
+	<errno.h>
+	<sys/mman.h>
+	<sys/file.h>
+	<sys/param.h>
+	<semaphore.h>
+	<limits.h>
+	<sys/mount.h>
+	<utime.h>
+	<sys/dcmd_blk.h>
+	<sys/statvfs.h>
+	<dlfcn.h>
+	<Windows.h>
+	<profileapi.h>
+	"tclsqlite.h"
+	"sqlite3rtree.h"
+	<ctype.h>
+	<unicode/utypes.h>
+	<unicode/uregex.h>
+	<unicode/ustring.h>
+	<unicode/ucol.h>
+	<unicode/ubrk.h>
+	<unicode/utf16.h>
+	<sys/uio.h>
+	<math.h>
+
+1784482786 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\recurso.rc
+

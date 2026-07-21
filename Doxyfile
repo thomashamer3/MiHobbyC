@@ -1,0 +1,55 @@
+# Doxyfile para MiHobbyC
+
+PROJECT_NAME           = "MiHobbyC"
+PROJECT_NUMBER         = "2.0"
+PROJECT_BRIEF          = "Selector de hobbies aleatorios con SQLite"
+PROJECT_LOGO           =
+OUTPUT_DIRECTORY       = ./docs
+CREATE_SUBDIRS         = YES
+
+# Entrada
+INPUT                  = .
+FILE_PATTERNS          = *.c *.h
+RECURSIVE              = NO
+EXCLUDE                = sqlite3.c sqlite3.h
+
+# Salida
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+HTML_DYNAMIC_SECTIONS  = YES
+
+# Extracción
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+# Compatibilidad C
+OPTIMIZE_OUTPUT_FOR_C  = YES
+TYPEDEF_HIDES_STRUCT   = YES
+
+# Diagramas (sin graphviz)
+HAVE_DOT               = NO
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+
+# Compilación
+PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS
+
+# Fuentes
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+# Word wrap
+WORD_WRAP              = YES
+
+# Warning
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
