@@ -1,9 +1,8 @@
 # MiHobbyC
 
-**Selector de hobbies aleatorios con persistencia en SQLite**
+**MiHobbyC es un proyecto personal desarrollado en C23 y SQLite que nació para resolver un problema cotidiano: tener demasiados hobbies y no saber cuál elegir cuando llega el momento de disfrutar del tiempo libre.**
 
-Descubre tu actividad del día con un sorteo aleatorio. Administra categorías y hobbies con operaciones CRUD completas, todo almacenado en una base de datos SQLite local.
-
+La aplicación administra libros, mangas, videojuegos, series, películas, proyectos de programación, escritura y cualquier otro hobby mediante un CRUD completo almacenado en SQLite. Con una única acción, selecciona la actividad del día para ayudarte a eliminar la fatiga de decisión y dedicarte a disfrutar en lugar de perder tiempo eligiendo.
 ---
 
 ## Características
