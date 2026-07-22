@@ -1,9 +1,24 @@
-# MiHobbyC
+<h1 align="center">MiHobbyC</h1>
 
-**MiHobbyC es un proyecto personal desarrollado en C23 y SQLite que nació para resolver un problema cotidiano: tener demasiados hobbies y no saber cuál elegir cuando llega el momento de disfrutar del tiempo libre.**
+<p align="center">
+Aplicación de escritorio desarrollada en C23 y SQLite para organizar hobbies y eliminar la fatiga de decisión.
+</p>
+
+<p align="center">
+<img src="MiHobbyC.ico" width="140" alt="MiHobbyC Logo">
+</p>
+
+<p align="center">
+<img src="https://img.shields.io/badge/C-C23-blue">
+<img src="https://img.shields.io/badge/SQLite-Embedded-blue">
+<img src="https://img.shields.io/badge/Platform-Windows-lightgrey">
+<img src="https://img.shields.io/badge/Documentation-Doxygen-success">
+</p>
+
+MiHobbyC es un proyecto personal desarrollado en C23 y SQLite que nació para resolver un problema cotidiano: tener demasiados hobbies y no saber cuál elegir cuando llega el momento de disfrutar del tiempo libre.
 
 La aplicación administra libros, mangas, videojuegos, series, películas, proyectos de programación, escritura y cualquier otro hobby mediante un CRUD completo almacenado en SQLite. Con una única acción, selecciona la actividad del día para ayudarte a eliminar la fatiga de decisión y dedicarte a disfrutar en lugar de perder tiempo eligiendo.
----
+
 
 ## Características
 
