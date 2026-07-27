@@ -8,7 +8,7 @@
  *          id secuencial, nombre y fecha de creación.
  *
  * @author MiHobbyC
- * @version 2.0
+ * @version 2.1
  * @date 2026
  *
  * @see hobby.h para la interfaz pública y constantes.
@@ -124,7 +124,7 @@ int hobby_contar_por_categoria(Database *db, const char *categoria)
  *
  * @see hobby_crear
  */
-static int hobby_nombre_existe(Database *db, const char *nombre)
+int hobby_nombre_existe(Database *db, const char *nombre)
 {
     if (!db || !nombre) return 0;
 
@@ -418,8 +418,9 @@ void hobby_mostrar_categorias(Database *db)
     fflush(stdout);
 
     sqlite3_stmt *stmt = db_preparar(db,
-                                     "SELECT categoria, COUNT(*) FROM " TABLE_HOBBIES " "
-                                     "WHERE nombre NOT LIKE ? "
+                                     "SELECT categoria, "
+                                     "SUM(CASE WHEN nombre NOT LIKE ? THEN 1 ELSE 0 END) "
+                                     "FROM " TABLE_HOBBIES " "
                                      "GROUP BY categoria ORDER BY categoria;");
     if (stmt)
     {
@@ -668,4 +669,216 @@ int hobby_eliminar_categoria(Database *db, const char *categoria)
     sqlite3_finalize(stmt);
 
     return changed > 0;
+}
+
+int hobby_seleccionar_aleatorio_filtrado(Database *db, const char *categoria,
+        char *buffer_cat, int tam_cat,
+        char *buffer_hobby, int tam_hobby)
+{
+    if (!db || !buffer_cat || !buffer_hobby || tam_cat <= 0 || tam_hobby <= 0) return 0;
+
+    sqlite3_stmt *stmt;
+    if (categoria && strlen(categoria) > 0)
+    {
+        stmt = db_preparar(db,
+                           "SELECT categoria, nombre FROM " TABLE_HOBBIES " "
+                           "WHERE categoria = ? AND nombre NOT LIKE ? "
+                           "ORDER BY RANDOM() LIMIT 1;");
+        if (!stmt) return 0;
+        sqlite3_bind_text(stmt, 1, categoria, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+    }
+    else
+    {
+        stmt = db_preparar(db,
+                           "SELECT categoria, nombre FROM " TABLE_HOBBIES " "
+                           "WHERE nombre NOT LIKE ? "
+                           "ORDER BY RANDOM() LIMIT 1;");
+        if (!stmt) return 0;
+        sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+    }
+
+    int ok = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *cat = (const char *)sqlite3_column_text(stmt, 0);
+        const char *nom = (const char *)sqlite3_column_text(stmt, 1);
+        if (cat && nom)
+        {
+            strncpy(buffer_cat, cat, tam_cat - 1);
+            buffer_cat[tam_cat - 1] = '\0';
+            strncpy(buffer_hobby, nom, tam_hobby - 1);
+            buffer_hobby[tam_hobby - 1] = '\0';
+            ok = 1;
+        }
+    }
+    sqlite3_finalize(stmt);
+    return ok;
+}
+
+int hobby_mostrar_estadisticas(Database *db)
+{
+    if (!db) return 0;
+
+    sqlite3_stmt *stmt;
+
+    printf("\n  +-----------------------------------------+\n");
+    printf("  |         ESTADISTICAS DE USO             |\n");
+    printf("  +-----------------------------------------+\n\n");
+
+    stmt = db_preparar(db,
+                       "SELECT COUNT(*) FROM " TABLE_HOBBIES " WHERE nombre NOT LIKE ?;");
+    if (!stmt) return 0;
+    sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+    int total_hobbies = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+        total_hobbies = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    stmt = db_preparar(db,
+                       "SELECT COUNT(DISTINCT categoria) FROM " TABLE_HOBBIES " "
+                       "WHERE nombre NOT LIKE ?;");
+    if (!stmt) return 0;
+    sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+    int total_cats = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+        total_cats = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    printf("  Total de categorias:  %d\n", total_cats);
+    printf("  Total de hobbies:     %d\n\n", total_hobbies);
+
+    printf("  %-20s %s\n", "Categoria", "Hobbies");
+    printf("  %-20s %s\n", "---", "---");
+
+    stmt = db_preparar(db,
+                       "SELECT categoria, COUNT(*) FROM " TABLE_HOBBIES " "
+                       "WHERE nombre NOT LIKE ? "
+                       "GROUP BY categoria ORDER BY COUNT(*) DESC;");
+    if (!stmt) return 0;
+    sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *cat = (const char *)sqlite3_column_text(stmt, 0);
+        int count = sqlite3_column_int(stmt, 1);
+        printf("  %-20s %d/%d\n", cat ? cat : "", count, MAX_POR_CATEGORIA);
+    }
+    sqlite3_finalize(stmt);
+
+    stmt = db_preparar(db,
+                       "SELECT categoria, nombre FROM " TABLE_HOBBIES " "
+                       "WHERE nombre NOT LIKE ? "
+                       "ORDER BY " COL_FECHA " DESC LIMIT 1;");
+    if (stmt)
+    {
+        sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+        if (sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            const char *cat = (const char *)sqlite3_column_text(stmt, 0);
+            const char *nom = (const char *)sqlite3_column_text(stmt, 1);
+            printf("\n  Hobby mas reciente:   %s > %s\n", cat ? cat : "", nom ? nom : "");
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    printf("\n  +-----------------------------------------+\n\n");
+    fflush(stdout);
+    return 1;
+}
+
+int hobby_exportar_csv(Database *db, const char *ruta)
+{
+    if (!db || !ruta) return -1;
+
+    FILE *f = fopen(ruta, "w");
+    if (!f) return -1;
+
+    fprintf(f, "id,nombre,categoria,fecha_creacion\n");
+
+    sqlite3_stmt *stmt = db_preparar(db,
+                                     "SELECT id, nombre, categoria, " COL_FECHA " FROM " TABLE_HOBBIES " "
+                                     "WHERE nombre NOT LIKE ? ORDER BY categoria, id;");
+    if (!stmt)
+    {
+        fclose(f);
+        return -1;
+    }
+    sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
+
+    int count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        int id = sqlite3_column_int(stmt, 0);
+        const char *nom = (const char *)sqlite3_column_text(stmt, 1);
+        const char *cat = (const char *)sqlite3_column_text(stmt, 2);
+        const char *fec = (const char *)sqlite3_column_text(stmt, 3);
+
+        fprintf(f, "%d,\"%s\",\"%s\",\"%s\"\n",
+                id,
+                nom ? nom : "",
+                cat ? cat : "",
+                fec ? fec : "");
+        count++;
+    }
+    sqlite3_finalize(stmt);
+    fclose(f);
+    return count;
+}
+
+int hobby_importar_csv(Database *db, const char *ruta)
+{
+    if (!db || !ruta) return -1;
+
+    FILE *f = fopen(ruta, "r");
+    if (!f) return -1;
+
+    char linea[1024];
+    if (fgets(linea, sizeof(linea), f) == NULL)
+    {
+        fclose(f);
+        return 0;
+    }
+
+    int count = 0;
+    while (fgets(linea, sizeof(linea), f))
+    {
+        size_t len = strlen(linea);
+        if (len > 0 && linea[len - 1] == '\n')
+            linea[len - 1] = '\0';
+
+        int id;
+        char nombre[MAX_HOBBY_LEN] = "";
+        char categoria[MAX_CATEGORIA_LEN] = "";
+        char fecha[FECHA_BUF_SIZE] = "";
+
+        if (sscanf(linea, "%d,\"%[^\"]\",\"%[^\"]\",\"%[^\"]\"",
+                   &id, nombre, categoria, fecha) != 4)
+            continue;
+
+        if (strlen(nombre) == 0 || strlen(categoria) == 0)
+            continue;
+
+        if (hobby_nombre_existe(db, nombre))
+            continue;
+
+        int total_en_cat = hobby_contar_por_categoria(db, categoria);
+        if (total_en_cat >= MAX_POR_CATEGORIA)
+            continue;
+
+        sqlite3_stmt *stmt = db_preparar(db,
+                                         "INSERT INTO " TABLE_HOBBIES " (id, nombre, categoria, " COL_FECHA ") "
+                                         "VALUES (?, ?, ?, ?);");
+        if (!stmt) continue;
+
+        sqlite3_bind_int(stmt, 1, id);
+        sqlite3_bind_text(stmt, 2, nombre, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 3, categoria, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 4, fecha, -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_DONE)
+            count++;
+        sqlite3_finalize(stmt);
+    }
+    fclose(f);
+    return count;
 }

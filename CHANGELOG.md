@@ -4,6 +4,30 @@ Todos los cambios notables en MiHobbyC documentados en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/).
 
+## [2.1.0] - 2026-07-22
+
+### Added
+
+- **Filtros por categoría en sorteo** — Opción de sortear hobbies de una categoría específica o de todas
+- **Estadísticas de uso** — Nueva opción `[3]` en el menú principal con total de hobbies, categorías, distribución y hobby más reciente
+- **Exportar a CSV** — Opción `[6]` en menú de categorías para exportar todos los hobbies a un archivo CSV
+- **Importar desde CSV** — Opción `[7]` en menú de categorías para importar hobbies desde un archivo CSV (con validación de duplicados y límites)
+- **Soporte multiplataforma** — Rutas y creación de directorios compatibles con Linux y macOS (usa `mkdir()` en POSIX, `_mkdir()` en Windows)
+- **`hobby_seleccionar_aleatorio_filtrado()`** — Nueva función con filtro de categoría opcional
+- **`hobby_mostrar_estadisticas()`** — Muestra resumen de uso de la aplicación
+- **`hobby_exportar_csv()`** — Exporta hobbies excluyendo placeholders
+- **`hobby_importar_csv()`** — Importa hobbies con validación de nombre duplicado y límite por categoría
+- **`hobby_nombre_existe()`** — Función pública para verificar duplicados (antes era static)
+
+### Changed
+
+- **Menú principal** — Nueva opción `[3] Estadísticas de uso`
+- **Menú de categorías** — Nuevas opciones `[6] Exportar` y `[7] Importar`
+- **Sorteo aleatorio** — Ahora muestra categorías y permite filtrar por una específica
+- **`DB_SUBCARPETA`** — Cambiado de `"MiHobbyC\\data"` a `"MiHobbyC/data"` (compatible multiplataforma)
+- **`database.c`** — Reemplazado `_mkdir` por macro `MIH_CREATE_DIR` con soporte POSIX
+- **`construir_ruta_base()`** — Usa `HOME` como fallback en Linux/macOS además de `LOCALAPPDATA`/`USERPROFILE`
+
 ## [2.0.0] - 2026-07-21
 
 ### Added

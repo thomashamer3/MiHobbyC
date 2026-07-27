@@ -1,32 +1,34 @@
 # depslib dependency file v1.0
-1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\main.c
+1785166571 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"database.h"
 	"hobby.h"
 
-1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.c
+1785165004 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.c
 	"database.h"
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<time.h>
 	<direct.h>
+	<sys/stat.h>
+	<sys/types.h>
 
-1784659646 d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.h
+1784750292 d:\anime\libros\lenguaje c\proyectos\mihobbyc\database.h
 	"sqlite3.h"
 	<stdio.h>
 
 1784439091 d:\anime\libros\lenguaje c\proyectos\mihobbyc\sqlite3.h
 	<stdarg.h>
 
-1784659646 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.c
+1785166557 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.c
 	"hobby.h"
 	<stdio.h>
 	<string.h>
 
-1784659646 d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.h
+1785165004 d:\anime\libros\lenguaje c\proyectos\mihobbyc\hobby.h
 	"database.h"
 
 1784442663 source:d:\anime\libros\lenguaje c\proyectos\mihobbyc\sqlite3.c

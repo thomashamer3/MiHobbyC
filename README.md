@@ -7,13 +7,16 @@ La aplicación administra libros, mangas, videojuegos, series, películas, proye
 
 ## Características
 
-- **Sorteo aleatorio** — Selecciona un hobby al azar de la base de datos
+- **Sorteo aleatorio** — Selecciona un hobby al azar, con filtro por categoría
+- **Estadísticas de uso** — Resumen total de hobbies, distribución por categoría y hobby más reciente
+- **Exportar/Importar CSV** — Exportar e importar hobbies desde archivos CSV
 - **Gestión de categorías** — Crear, renombrar, eliminar y listar categorías
 - **CRUD de hobbies** — Agregar, editar, eliminar y listar hobbies por categoría
 - **Nº secuencial** — Los hobbies se identifican por Nº (1-5) en lugar de IDs internos
 - **Persistencia SQLite** — Base de datos local con WAL journal
 - **Log de auditoría** — Registro de todas las operaciones CRUD en archivo de log
 - **Migraciones automáticas** — La BD se actualiza sin perder datos
+- **Multiplataforma** — Compatible con Windows, Linux y macOS
 - **Sin dependencias externas** — SQLite3 embebido en el proyecto
 
 ## Capturas
@@ -29,6 +32,7 @@ La aplicación administra libros, mangas, videojuegos, series, películas, proye
   +-----------------------------------------+
   |  [1]  Sortear hobby aleatorio           |
   |  [2]  Administrar categorias            |
+  |  [3]  Estadisticas de uso               |
   |  [0]  Salir                             |
   +-----------------------------------------+
 

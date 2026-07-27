@@ -6,7 +6,7 @@
  *          aleatoria, gestión de categorías y conversión de Nº a ID.
  *
  * @author MiHobbyC
- * @version 2.0
+ * @version 2.1
  * @date 2026
  *
  * @see database.h para la capa de persistencia SQLite.
@@ -129,6 +129,19 @@ int hobby_eliminar(Database *db, int id, const char *categoria);
  * @see mostrar_hobby_seleccionado
  */
 int hobby_seleccionar_aleatorio(Database *db, char *buffer_cat, int tam_cat, char *buffer_hobby, int tam_hobby);
+
+/**
+ * @brief Verifica si un nombre de hobby ya existe en la base de datos.
+ *
+ * @param[in] db     Puntero a la estructura Database.
+ * @param[in] nombre Nombre del hobby a verificar.
+ *
+ * @return 1 si existe, 0 si no existe o error.
+ *
+ * @see hobby_crear
+ * @see hobby_importar_csv
+ */
+int hobby_nombre_existe(Database *db, const char *nombre);
 
 /**
  * @brief Cuenta los hobbies reales (excluyendo placeholders) de una categoría.
@@ -262,5 +275,67 @@ int hobby_renombrar_categoria(Database *db, const char *vieja, const char *nueva
  * @see hobby_renombrar_categoria
  */
 int hobby_eliminar_categoria(Database *db, const char *categoria);
+
+/**
+ * @brief Selecciona un hobby aleatorio de una categoría específica.
+ * @details Igual que hobby_seleccionar_aleatorio pero filtra por categoría.
+ *
+ * @param[in,out] db          Puntero a la estructura Database.
+ * @param[in]     categoria   Nombre de la categoría (NULL para cualquier).
+ * @param[out]    buffer_cat  Buffer donde copiar la categoría seleccionada.
+ * @param[in]     tam_cat     Tamaño del buffer de categoría.
+ * @param[out]    buffer_hobby Buffer donde copiar el nombre del hobby.
+ * @param[in]     tam_hobby   Tamaño del buffer de hobby.
+ *
+ * @return 1 si se seleccionó un hobby, 0 si no hay hobbies o error.
+ *
+ * @see hobby_seleccionar_aleatorio
+ */
+int hobby_seleccionar_aleatorio_filtrado(Database *db, const char *categoria,
+        char *buffer_cat, int tam_cat,
+        char *buffer_hobby, int tam_hobby);
+
+/**
+ * @brief Muestra estadísticas de uso de la aplicación.
+ * @details Imprime: total de hobbies, total de categorías, hobbies por categoría,
+ *          categoría con más hobbies y hobby más reciente.
+ *
+ * @param[in] db Puntero a la estructura Database.
+ *
+ * @return 1 si éxito, 0 si error.
+ *
+ * @see hobby_contar_total
+ * @see hobby_contar_categorias
+ */
+int hobby_mostrar_estadisticas(Database *db);
+
+/**
+ * @brief Exporta todos los hobbies a un archivo CSV.
+ * @details Escribe: id,nombre,categoria,fecha_creacion por línea.
+ *          Excluye registros placeholder.
+ *
+ * @param[in] db       Puntero a la estructura Database.
+ * @param[in] ruta     Ruta del archivo CSV de salida.
+ *
+ * @return Cantidad de hobbies exportados (>= 0), o -1 si error.
+ *
+ * @see hobby_importar_csv
+ */
+int hobby_exportar_csv(Database *db, const char *ruta);
+
+/**
+ * @brief Importa hobbies desde un archivo CSV.
+ * @details Espera formato: id,nombre,categoria,fecha_creacion.
+ *          Si un hobby ya existe (mismo nombre), se omite.
+ *          Valida que la categoría tenga espacio disponible.
+ *
+ * @param[in,out] db    Puntero a la estructura Database.
+ * @param[in]     ruta  Ruta del archivo CSV de entrada.
+ *
+ * @return Cantidad de hobbies importados (>= 0), o -1 si error.
+ *
+ * @see hobby_exportar_csv
+ */
+int hobby_importar_csv(Database *db, const char *ruta);
 
 #endif

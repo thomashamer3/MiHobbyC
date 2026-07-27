@@ -6,7 +6,7 @@
  *          ejecutar consultas, preparar statements y escribir logs.
  *
  * @author MiHobbyC
- * @version 2.0
+ * @version 2.1
  * @date 2026
  *
  * @see sqlite3.h para la API de SQLite3 embebida.
@@ -19,8 +19,8 @@
 #include "sqlite3.h"
 #include <stdio.h>
 
-/** @brief Subcarpeta de datos dentro de LOCALAPPDATA o USERPROFILE. */
-#define DB_SUBCARPETA "MiHobbyC\\data"
+/** @brief Subcarpeta de datos dentro de LOCALAPPDATA o HOME. */
+#define DB_SUBCARPETA "MiHobbyC/data"
 
 /** @brief Nombre del archivo de base de datos SQLite. */
 #define DB_ARCHIVO    "hobbies.db"

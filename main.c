@@ -7,7 +7,7 @@
  *          capas database.h y hobby.h para persistencia y lógica.
  *
  * @author MiHobbyC
- * @version 2.0
+ * @version 2.1
  * @date 2026
  *
  * @see database.h para la capa de acceso a datos.
@@ -29,6 +29,9 @@ static void cat_menu_crear(Database *db);
 static void cat_menu_editar(Database *db);
 static void cat_menu_eliminar(Database *db);
 static void cat_menu_seleccionar(Database *db);
+static void cat_menu_exportar(Database *db);
+static void cat_menu_importar(Database *db);
+static void main_menu_sortear(Database *db);
 
 /**
  * @brief Limpia la pantalla de la consola.
@@ -76,6 +79,7 @@ static void mostrar_menu_principal(void)
     printf("  +-----------------------------------------+\n");
     printf("  |  [1]  Sortear hobby aleatorio           |\n");
     printf("  |  [2]  Administrar categorias            |\n");
+    printf("  |  [3]  Estadisticas de uso               |\n");
     printf("  |  [0]  Salir                             |\n");
     printf("  +-----------------------------------------+\n\n");
 }
@@ -97,6 +101,8 @@ static void mostrar_menu_categorias(void)
     printf("  |  [3]  Editar categoria                  |\n");
     printf("  |  [4]  Eliminar categoria                |\n");
     printf("  |  [5]  Administrar hobbies de una cat.   |\n");
+    printf("  |  [6]  Exportar hobbies a CSV            |\n");
+    printf("  |  [7]  Importar hobbies desde CSV        |\n");
     printf("  |  [0]  Volver                            |\n");
     printf("  +-----------------------------------------+\n\n");
 }
@@ -204,11 +210,8 @@ static int resolver_categoria(Database *db, char *buffer, int tam)
 
     sqlite3_stmt *stmt = db_preparar(db,
                                      "SELECT DISTINCT categoria FROM " TABLE_HOBBIES " "
-                                     "WHERE nombre NOT LIKE ? "
                                      "ORDER BY categoria;");
     if (!stmt) return 0;
-
-    sqlite3_bind_text(stmt, 1, "%" HOBBY_PLACEHOLDER, -1, SQLITE_STATIC);
 
     int i = 1;
     int encontrado = 0;
@@ -285,6 +288,51 @@ static void mostrar_mensaje_error(const char *mensaje)
 static void mostrar_mensaje_info(const char *mensaje)
 {
     printf("\n  [INFO] %s\n", mensaje);
+}
+
+static void main_menu_sortear(Database *db)
+{
+    printf("  --- Sortear Hobby ---\n\n");
+    hobby_mostrar_categorias(db);
+
+    printf("  Selecciona una categoria (#) o deja vacio para todas:\n");
+    char cat_filtro[MAX_CATEGORIA_LEN] = "";
+    leer_texto("Categoria: ", cat_filtro, sizeof(cat_filtro));
+
+    if (strlen(cat_filtro) > 0)
+    {
+        if (!resolver_categoria(db, cat_filtro, sizeof(cat_filtro)))
+        {
+            mostrar_mensaje_error("Numero de categoria invalido.");
+            return;
+        }
+        if (!hobby_categoria_existe(db, cat_filtro))
+        {
+            mostrar_mensaje_error("La categoria no existe.");
+            return;
+        }
+    }
+
+    char buffer_cat[MAX_CATEGORIA_LEN];
+    char buffer_hobby[MAX_HOBBY_LEN];
+
+    db_log(db, "Sorteo aleatorio solicitado");
+
+    if (hobby_seleccionar_aleatorio_filtrado(db,
+            strlen(cat_filtro) > 0 ? cat_filtro : NULL,
+            buffer_cat, sizeof(buffer_cat),
+            buffer_hobby, sizeof(buffer_hobby)))
+    {
+        mostrar_hobby_seleccionado(buffer_cat, buffer_hobby);
+        char msg[MSG_BUF_SIZE];
+        snprintf(msg, sizeof(msg), "Hobby seleccionado: %s: %s", buffer_cat, buffer_hobby);
+        db_log(db, msg);
+    }
+    else
+    {
+        mostrar_mensaje_error("No hay hobbies registrados. Agrega categorias y hobbies primero.");
+        db_log(db, "ADVERTENCIA: No hay hobbies para seleccionar");
+    }
 }
 
 static void hobby_menu_agregar(Database *db, const char *categoria)
@@ -593,6 +641,68 @@ static void cat_menu_seleccionar(Database *db)
     menu_hobbies(db, cat_seleccionada);
 }
 
+static void cat_menu_exportar(Database *db)
+{
+    printf("  --- Exportar Hobbies a CSV ---\n\n");
+
+    char ruta[PATH_BUF_SIZE];
+    leer_texto("Ruta del archivo CSV: ", ruta, sizeof(ruta));
+    if (strlen(ruta) == 0)
+    {
+        mostrar_mensaje_error("La ruta no puede estar vacia.");
+        return;
+    }
+
+    db_log(db, "Exportacion CSV solicitada");
+
+    int count = hobby_exportar_csv(db, ruta);
+    if (count >= 0)
+    {
+        char msg[MSG_BUF_SIZE];
+        snprintf(msg, sizeof(msg), "Exportados %d hobbies a %s", count, ruta);
+        db_log(db, msg);
+        char display[MSG_BUF_SIZE];
+        snprintf(display, sizeof(display), "Exportados %d hobbies a '%s'.", count, ruta);
+        mostrar_mensaje_exito(display);
+    }
+    else
+    {
+        mostrar_mensaje_error("No se pudo exportar el archivo.");
+        db_log(db, "ERROR: Fallo en exportacion CSV");
+    }
+}
+
+static void cat_menu_importar(Database *db)
+{
+    printf("  --- Importar Hobbies desde CSV ---\n\n");
+
+    char ruta[PATH_BUF_SIZE];
+    leer_texto("Ruta del archivo CSV: ", ruta, sizeof(ruta));
+    if (strlen(ruta) == 0)
+    {
+        mostrar_mensaje_error("La ruta no puede estar vacia.");
+        return;
+    }
+
+    db_log(db, "Importacion CSV solicitada");
+
+    int count = hobby_importar_csv(db, ruta);
+    if (count >= 0)
+    {
+        char msg[MSG_BUF_SIZE];
+        snprintf(msg, sizeof(msg), "Importados %d hobbies desde %s", count, ruta);
+        db_log(db, msg);
+        char display[MSG_BUF_SIZE];
+        snprintf(display, sizeof(display), "Importados %d hobbies desde '%s'.", count, ruta);
+        mostrar_mensaje_exito(display);
+    }
+    else
+    {
+        mostrar_mensaje_error("No se pudo leer el archivo CSV.");
+        db_log(db, "ERROR: Fallo en importacion CSV");
+    }
+}
+
 /**
  * @brief Bucle del menú de administración de categorías.
  * @details Implementa las opciones: ver, agregar, editar, eliminar categorías
@@ -643,6 +753,12 @@ static void menu_categorias(Database *db)
         case 5:
             cat_menu_seleccionar(db);
             break;
+        case 6:
+            cat_menu_exportar(db);
+            break;
+        case 7:
+            cat_menu_importar(db);
+            break;
         case 0:
             break;
         default:
@@ -661,16 +777,19 @@ static void menu_categorias(Database *db)
  * @brief Función principal - Punto de entrada del programa.
  * @details Inicializa la base de datos, ejecuta hobby_init() y entra
  *          en el bucle principal del menú. Maneja las opciones:
- *          [1] Sorteo aleatorio, [2] Administrar categorías, [0] Salir.
+ *          [1] Sorteo aleatorio con filtro, [2] Administrar categorías,
+ *          [3] Estadísticas de uso, [0] Salir.
  *
  * @return 0 si éxito, 1 si error al inicializar la BD.
  *
- * @pre El sistema de archivos debe permitir escritura en LOCALAPPDATA.
+ * @pre El sistema de archivos debe permitir escritura en LOCALAPPDATA/HOME.
  * @post La BD y el log están cerrados. Los recursos están liberados.
  *
  * @see db_abrir
  * @see hobby_init
  * @see db_cerrar
+ * @see main_menu_sortear
+ * @see hobby_mostrar_estadisticas
  */
 int main(void)
 {
@@ -688,8 +807,6 @@ int main(void)
         return 1;
     }
 
-    char buffer_cat[MAX_CATEGORIA_LEN];
-    char buffer_hobby[MAX_HOBBY_LEN];
     int opcion;
 
     do
@@ -708,23 +825,16 @@ int main(void)
         switch (opcion)
         {
         case 1:
-            db_log(&db, "Sorteo aleatorio solicitado");
-            if (hobby_seleccionar_aleatorio(&db, buffer_cat, sizeof(buffer_cat), buffer_hobby, sizeof(buffer_hobby)))
-            {
-                mostrar_hobby_seleccionado(buffer_cat, buffer_hobby);
-                char msg[MSG_BUF_SIZE];
-                snprintf(msg, sizeof(msg), "Hobby seleccionado: %s: %s", buffer_cat, buffer_hobby);
-                db_log(&db, msg);
-            }
-            else
-            {
-                mostrar_mensaje_error("No hay hobbies registrados. Agrega categorias y hobbies primero.");
-                db_log(&db, "ADVERTENCIA: No hay hobbies para seleccionar");
-            }
+            main_menu_sortear(&db);
             pausar();
             break;
         case 2:
             menu_categorias(&db);
+            break;
+        case 3:
+            limpiar_pantalla();
+            hobby_mostrar_estadisticas(&db);
+            pausar();
             break;
         case 0:
             limpiar_pantalla();

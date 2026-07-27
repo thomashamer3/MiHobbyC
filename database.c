@@ -7,7 +7,7 @@
  *          en LOCALAPPDATA\MiHobbyC\data/.
  *
  * @author MiHobbyC
- * @version 2.0
+ * @version 2.1
  * @date 2026
  *
  * @see database.h para la interfaz pública.
@@ -19,7 +19,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#ifdef _WIN32
 #include <direct.h>
+#define MIH_CREATE_DIR(path) _mkdir(path)
+#define MIH_PATH_SEP "\\"
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#define MIH_CREATE_DIR(path) mkdir(path, 0755)
+#define MIH_PATH_SEP "/"
+#endif
 
 /**
  * @brief Obtiene la fecha y hora actual formateada.
@@ -66,11 +76,11 @@ static int crear_directorio(const char *ruta)
         if (*p == '\\' || *p == '/')
         {
             *p = '\0';
-            _mkdir(tmp);
-            *p = '\\';
+            MIH_CREATE_DIR(tmp);
+            *p = MIH_PATH_SEP[0];
         }
     }
-    return _mkdir(tmp);
+    return MIH_CREATE_DIR(tmp);
 }
 
 /**
@@ -95,14 +105,23 @@ static int construir_ruta_base(char *buffer, int tam)
         local = getenv("USERPROFILE");
         if (!local || local[0] == '\0')
         {
-            fprintf(stderr, "No se pudo determinar la ruta del usuario.\n");
-            return 0;
+            const char *home = getenv("HOME");
+            if (!home || home[0] == '\0')
+            {
+                fprintf(stderr, "No se pudo determinar la ruta del usuario.\n");
+                return 0;
+            }
+            snprintf(buffer, tam, "%s%s.%s", home, MIH_PATH_SEP, DB_SUBCARPETA);
         }
-        snprintf(buffer, tam, "%s\\AppData\\Local\\%s", local, DB_SUBCARPETA);
+        else
+        {
+            snprintf(buffer, tam, "%s%sAppData%sLocal%s%s",
+                     local, MIH_PATH_SEP, MIH_PATH_SEP, MIH_PATH_SEP, DB_SUBCARPETA);
+        }
     }
     else
     {
-        snprintf(buffer, tam, "%s\\%s", local, DB_SUBCARPETA);
+        snprintf(buffer, tam, "%s%s%s", local, MIH_PATH_SEP, DB_SUBCARPETA);
     }
     return 1;
 }
@@ -149,7 +168,7 @@ int db_abrir(Database *db)
         fprintf(stderr, "Ruta de log demasiado larga.\n");
         return 0;
     }
-    snprintf(ruta_log, sizeof(ruta_log), "%s\\%s", ruta_base, DB_LOG);
+    snprintf(ruta_log, sizeof(ruta_log), "%s%s%s", ruta_base, MIH_PATH_SEP, DB_LOG);
     db->log = fopen(ruta_log, "a");
     if (!db->log)
     {
@@ -169,7 +188,7 @@ int db_abrir(Database *db)
         db_log(db, "ERROR: Ruta de BD demasiado larga");
         return 0;
     }
-    snprintf(ruta_db, sizeof(ruta_db), "%s\\%s", ruta_base, DB_ARCHIVO);
+    snprintf(ruta_db, sizeof(ruta_db), "%s%s%s", ruta_base, MIH_PATH_SEP, DB_ARCHIVO);
 
     int rc = sqlite3_open(ruta_db, &db->db);
     if (rc != SQLITE_OK)
