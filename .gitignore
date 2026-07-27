@@ -2,6 +2,3 @@ skills/
 *.exe
 *.o
 *.obj
-bin/
-obj/
-installer/
